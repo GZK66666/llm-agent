@@ -1,0 +1,5 @@
+.idea/
+database/profile_rag.db
+__pycache__/
+.DS_Store
+benchmark/ab_result.txt
