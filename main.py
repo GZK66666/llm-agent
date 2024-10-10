@@ -40,7 +40,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.title("GLM-4 Agent")
+st.title("TeleAgent")
 
 with st.sidebar:
     top_p = st.slider("top_p", 0.0, 1.0, 0.8, step=0.01)

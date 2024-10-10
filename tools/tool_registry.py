@@ -14,10 +14,12 @@ from typing import get_origin, Annotated
 import subprocess
 
 from .interface import ToolObservation
-
+from .milvus_search import Retriever
 
 _TOOL_HOOKS = {}
 _TOOL_DESCRIPTIONS = []
+
+milvus_retriever = Retriever()
 
 
 def register_tool(func: Callable):
@@ -90,59 +92,15 @@ def get_tools() -> list[dict]:
 
 
 @register_tool
-def random_number_generator(
-        seed: Annotated[int, "The random seed used by the generator", True],
-        range: Annotated[tuple[int, int], "The range of the generated numbers", True],
-) -> int:
-    """
-    Generates a random number x, s.t. range[0] <= x < range[1]
-    """
-    if not isinstance(seed, int):
-        raise TypeError("Seed must be an integer")
-    if not isinstance(range, tuple):
-        raise TypeError("Range must be a tuple")
-    if not isinstance(range[0], int) or not isinstance(range[1], int):
-        raise TypeError("Range must be a tuple of integers")
-
-    import random
-
-    return random.Random(seed).randint(*range)
-
-
-@register_tool
-def get_shell(
-        query: Annotated[str, "The command should run in Linux shell", True],
-) -> str:
-    """
-    Use shell to run command
-    """
-    if not isinstance(query, str):
-        raise TypeError("Command must be a string")
-    try:
-        result = subprocess.run(
-            query,
-            shell=True,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return e.stderr
-
-
-@register_tool
 def milvus_search(
-        query: Annotated[str, "用于查询政务信息的问题", True],
+        query: Annotated[str, "与政务相关的问题", True],
 ) -> str:
     """
-    这是一个milvus数据库，用于查询政务相关的问题，如果你不确定，应该搜索一下，谢谢！
+    这是一个存储政务资料的数据库，可以用来搜索与政务相关的问题，如果你不确定就应该用来搜索一下。需要注意的是，搜索结果可能包含脏数据或不相关数据，你需要根据query与结果的相似度酌情使用。
     """
-    return "fake mock:" + query
+    return milvus_retriever.retrieve(query)
 
 
 if __name__ == "__main__":
-    # print(dispatch_tool("get_shell", "{\"query\": \"pwd\"}"))
-    print(dispatch_tool("milvus_search", "{\"query\": \"身份证丢了怎么办？\"}"))
-    # print(get_tools())
+    # print(dispatch_tool("milvus_search", "{\"query\": \"身份证丢了怎么办？\"}"))
+    print(get_tools())
